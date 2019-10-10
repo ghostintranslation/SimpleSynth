@@ -128,10 +128,40 @@ inline AudioMixer4 * Synth::getOutput(){
 }
 
 
+/**
+ * Update
+ */
 inline void Synth::update(){
-  int modulatorFrequency = map(analogRead(0), 0, 1023, 100, 2000);
-  float modulatorAmplitude = (float)analogRead(1)/1000;
 
+  // Attack
+  int attack = map(analogRead(0), 0, 1023, 0, 2000);
+  if(this->attack != attack){
+    this->attack = attack;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setAttack(attack);
+    }
+  }
+
+  // Decay
+  int decay = map(analogRead(1), 0, 1023, 0, 2000);
+  if(this->decay != decay){
+    this->decay = decay;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setDecay(decay);
+    }
+  }
+
+  // Release
+  int release = map(analogRead(2), 0, 1023, 0, 2000);
+  if(this->release != release){
+    this->release = release;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setRelease(release);
+    }
+  }
+  
+  // Modulator frequency
+  int modulatorFrequency = map(analogRead(3), 0, 1023, 100, 2000);
   if(this->modulatorFrequency != modulatorFrequency){
     this->modulatorFrequency = modulatorFrequency;
     for (int i = 0; i < voiceCount ; i++) {
@@ -139,8 +169,9 @@ inline void Synth::update(){
     }
   }
   
+  // Modulator amplitude
+  float modulatorAmplitude = (float)analogRead(4)/1000;
   if(this->modulatorAmplitude != modulatorAmplitude){
-    Serial.println(modulatorAmplitude);
     this->modulatorAmplitude = modulatorAmplitude;
     for (int i = 0; i < voiceCount ; i++) {
       this->voices[i]->setModulatorAmplitude(modulatorAmplitude);

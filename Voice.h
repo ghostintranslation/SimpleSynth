@@ -17,9 +17,6 @@ class Voice{
     AudioEffectEnvelope *env2;
     AudioConnection* patchCords[7];
     AudioMixer4 *output;
-    unsigned int attack;
-    unsigned int decay;
-    unsigned int release;
 
   public:
     Voice();
@@ -34,6 +31,9 @@ class Voice{
     bool isActive();
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
+    void setAttack(int att);
+    void setDecay(int dec);
+    void setRelease(int rel);
 };
 
 /**
@@ -56,18 +56,9 @@ inline Voice::Voice(){
   this->oscFm2->begin(WAVEFORM_SAWTOOTH);
   this->oscFm2->amplitude(1);
 
-  this->attack = 10;
-  this->decay = 35;
-  this->release = 2000;
   this->env = new AudioEffectEnvelope();
-  this->env->attack(this->attack); // TODO Link to a potentiometer
-  this->env->decay(this->decay); // TODO Link to a potentiometer
-  this->env->release(this->release); // TODO Link to a potentiometer
   this->env->releaseNoteOn(4);
   this->env2 = new AudioEffectEnvelope();
-  this->env2->attack(this->attack); // TODO Link to a potentiometer
-  this->env2->decay(this->decay); // TODO Link to a potentiometer
-  this->env2->release(this->release); // TODO Link to a potentiometer
   this->env2->releaseNoteOn(4);
 
   this->output = new AudioMixer4();
@@ -87,10 +78,6 @@ inline Voice::Voice(){
  * Set Attack Decay Release
  */
 inline void Voice::setADR(unsigned int attack, unsigned int decay, unsigned int release){
-  this->attack = attack;
-  this->decay = decay;
-  this->release = release;
-  
   this->env->attack(attack);
   this->env->decay(decay);
   this->env->release(release);
@@ -142,5 +129,17 @@ inline void Voice::setModulatorFrequency(int freq){
 inline void Voice::setModulatorAmplitude(float amp){
   this->osc->amplitude(amp);
   this->osc2->amplitude(amp);
+}
+inline void Voice::setAttack(int att){
+  this->env->attack(att);
+  this->env2->attack(att);
+}
+inline void Voice::setDecay(int dec){
+  this->env->decay(dec);
+  this->env2->decay(dec);
+}
+inline void Voice::setRelease(int rel){
+  this->env->release(rel);
+  this->env2->release(rel);
 }
 #endif
