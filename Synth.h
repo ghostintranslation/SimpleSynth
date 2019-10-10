@@ -20,6 +20,8 @@ class Synth{
     unsigned int attack;
     unsigned int decay;
     unsigned int release;
+    int modulatorFrequency;
+    float modulatorAmplitude;
 
     AudioConnection* patchCords[voiceCount/4 + voiceCount]; 
     AudioMixer4 *mixers[voiceCount/2];
@@ -31,6 +33,7 @@ class Synth{
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
     void stop();
+    void update();
     AudioMixer4 * getOutput();
 
 };
@@ -122,6 +125,28 @@ inline void Synth::stop(){
  */
 inline AudioMixer4 * Synth::getOutput(){
   return this->output;
+}
+
+
+inline void Synth::update(){
+  //int modulatorFrequency = map(analogRead(0), 0, 1023, 100, 2000);
+  float modulatorAmplitude = (float)analogRead(0)/1000;
+
+  /*if(this->modulatorFrequency != modulatorFrequency){
+    this->modulatorFrequency = modulatorFrequency;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setModulatorFrequency(modulatorFrequency);
+    }
+  }
+  */
+  if(this->modulatorAmplitude != modulatorAmplitude){
+    Serial.println(modulatorAmplitude);
+    this->modulatorAmplitude = modulatorAmplitude;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setModulatorAmplitude(modulatorAmplitude);
+    }
+  }
+  
 }
 
 #endif

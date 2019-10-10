@@ -32,6 +32,8 @@ class Voice{
     void noteOff();
     void setADR(unsigned int attack, unsigned int decay, unsigned int release);
     bool isActive();
+    void setModulatorFrequency(int freq);
+    void setModulatorAmplitude(float amp);
 };
 
 /**
@@ -41,14 +43,14 @@ inline Voice::Voice(){
 
   this->osc = new AudioSynthWaveformSine();
   this->osc->amplitude(0.1);
-  this->osc->frequency(1200); // TODO Link to a potentiometer
+  this->osc->frequency(1200);
   
   this->oscFm = new AudioSynthWaveformSineModulated();
   this->oscFm->amplitude(1);
   
   this->osc2 = new AudioSynthWaveformSine();
   this->osc2->amplitude(0.005);
-  this->osc2->frequency(1200); // TODO Link to a potentiometer
+  this->osc2->frequency(1200);
   
   this->oscFm2 = new AudioSynthWaveformModulated();
   this->oscFm2->begin(WAVEFORM_SAWTOOTH);
@@ -132,4 +134,13 @@ inline bool Voice::isActive(){
   return this->env->isActive();
 }
 
+
+inline void Voice::setModulatorFrequency(int freq){
+  this->osc->frequency(freq);
+  this->osc2->frequency(freq);
+}
+inline void Voice::setModulatorAmplitude(float amp){
+  this->osc->amplitude(amp);
+  this->osc2->amplitude(amp);
+}
 #endif
