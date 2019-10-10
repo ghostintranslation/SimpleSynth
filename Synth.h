@@ -129,16 +129,16 @@ inline AudioMixer4 * Synth::getOutput(){
 
 
 inline void Synth::update(){
-  //int modulatorFrequency = map(analogRead(0), 0, 1023, 100, 2000);
-  float modulatorAmplitude = (float)analogRead(0)/1000;
+  int modulatorFrequency = map(analogRead(0), 0, 1023, 100, 2000);
+  float modulatorAmplitude = (float)analogRead(1)/1000;
 
-  /*if(this->modulatorFrequency != modulatorFrequency){
+  if(this->modulatorFrequency != modulatorFrequency){
     this->modulatorFrequency = modulatorFrequency;
     for (int i = 0; i < voiceCount ; i++) {
       this->voices[i]->setModulatorFrequency(modulatorFrequency);
     }
   }
-  */
+  
   if(this->modulatorAmplitude != modulatorAmplitude){
     Serial.println(modulatorAmplitude);
     this->modulatorAmplitude = modulatorAmplitude;
