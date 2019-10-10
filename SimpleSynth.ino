@@ -50,6 +50,7 @@ void setup() {
  */
 void loop() {
   MIDI.read();
+  synth.update();
   usbMIDI.read();
 }
 

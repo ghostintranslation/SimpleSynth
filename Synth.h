@@ -20,6 +20,8 @@ class Synth{
     unsigned int attack;
     unsigned int decay;
     unsigned int release;
+    int modulatorFrequency;
+    float modulatorAmplitude;
 
     AudioConnection* patchCords[voiceCount/4 + voiceCount]; 
     AudioMixer4 *mixers[voiceCount/2];
@@ -31,6 +33,7 @@ class Synth{
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
     void stop();
+    void update();
     AudioMixer4 * getOutput();
 
 };
@@ -122,6 +125,59 @@ inline void Synth::stop(){
  */
 inline AudioMixer4 * Synth::getOutput(){
   return this->output;
+}
+
+
+/**
+ * Update
+ */
+inline void Synth::update(){
+
+  // Attack
+  int attack = map(analogRead(0), 0, 1023, 0, 2000);
+  if(this->attack != attack){
+    this->attack = attack;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setAttack(attack);
+    }
+  }
+
+  // Decay
+  int decay = map(analogRead(1), 0, 1023, 0, 2000);
+  if(this->decay != decay){
+    this->decay = decay;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setDecay(decay);
+    }
+  }
+
+  // Release
+  int release = map(analogRead(2), 0, 1023, 0, 2000);
+  if(this->release != release){
+    this->release = release;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setRelease(release);
+    }
+  }
+  
+  // Modulator frequency
+  int modulatorFrequency = map(analogRead(3), 0, 1023, 100, 2000);
+  if(this->modulatorFrequency != modulatorFrequency){
+    this->modulatorFrequency = modulatorFrequency;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setModulatorFrequency(modulatorFrequency);
+    }
+  }
+  
+  // Modulator amplitude
+  float modulatorAmplitude = (float)analogRead(4)/1000;
+  if(this->modulatorAmplitude != modulatorAmplitude){
+    this->modulatorAmplitude = modulatorAmplitude;
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setModulatorAmplitude(modulatorAmplitude);
+    }
+  }
+  
 }
 
 #endif
