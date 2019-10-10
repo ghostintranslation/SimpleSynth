@@ -1,5 +1,8 @@
 #include <Audio.h>
+#include <MIDI.h>
 #include "Synth.h"
+
+MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
 int ledPin = 13;
 
@@ -23,12 +26,16 @@ void setup() {
   usbMIDI.setHandleNoteOff(onNoteOff);
   usbMIDI.setHandleStop(onStop);
   usbMIDI.setHandleSystemReset(onStop);
+
+  MIDI.setHandleNoteOn(onNoteOn);
+  MIDI.setHandleNoteOff(onNoteOff);
+  MIDI.begin(MIDI_CHANNEL_OMNI);
   
   // Audio connections require memory to work.
   AudioMemory(20);
 
   sgtl5000_1.enable();
-  sgtl5000_1.volume(0.5);
+  sgtl5000_1.volume(1);
   
   while (!Serial && millis() < 2500); // wait for serial monitor
   
@@ -42,6 +49,7 @@ void setup() {
  * Loop
  */
 void loop() {
+  MIDI.read();
   usbMIDI.read();
 }
 
