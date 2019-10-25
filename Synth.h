@@ -22,6 +22,11 @@ class Synth{
     unsigned int release;
     int modulatorFrequency;
     float modulatorAmplitude;
+    byte attackPin;
+    byte decayPin;
+    byte releasePin;
+    byte modulatorFrequencyPin;
+    byte modulatorAmplitudePin;
 
     AudioConnection* patchCords[voiceCount/4 + voiceCount]; 
     AudioMixer4 *mixers[voiceCount/2];
@@ -29,6 +34,7 @@ class Synth{
     
   public:
     Synth();
+    Synth(byte attackPin, byte decayPin, byte releasePin, byte modulatorFrequencyPin, byte modulatorAmplitudePin);
 
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
@@ -69,6 +75,16 @@ inline Synth::Synth(){
     this->voices[i]->setADR(this->attack, this->decay, this->release);
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutput(), 0, *this->mixers[i/4], i%4);
   }
+}
+/**
+ * Constructor that sets the potentiometer pins
+ */
+inline Synth::Synth(byte attackPin, byte decayPin, byte releasePin, byte modulatorFrequencyPin, byte modulatorAmplitudePin) : Synth(){
+  this->attackPin = attackPin;
+  this->decayPin = decayPin;
+  this->releasePin = releasePin;
+  this->modulatorFrequencyPin = modulatorFrequencyPin;
+  this->modulatorAmplitudePin = modulatorAmplitudePin;
 }
 
 /**
@@ -135,7 +151,7 @@ inline AudioMixer4 * Synth::getOutput(){
 inline void Synth::update(){
     
   // Attack
-  int attack = map(analogRead(0), 0, 1023, 0, 2000);
+  int attack = map(analogRead(this->attackPin), 0, 1023, 0, 2000);
   if(this->attack != attack){
     this->attack = attack;
     for (int i = 0; i < voiceCount ; i++) {
@@ -144,7 +160,7 @@ inline void Synth::update(){
   }
 
   // Decay
-  int decay = map(analogRead(1), 0, 1023, 0, 2000);
+  int decay = map(analogRead(this->decayPin), 0, 1023, 0, 2000);
   if(this->decay != decay){
     this->decay = decay;
     for (int i = 0; i < voiceCount ; i++) {
@@ -153,7 +169,7 @@ inline void Synth::update(){
   }
 
   // Release
-  int release = map(analogRead(2), 0, 1023, 0, 2000);
+  int release = map(analogRead(this->releasePin), 0, 1023, 0, 2000);
   if(this->release != release){
     this->release = release;
     for (int i = 0; i < voiceCount ; i++) {
@@ -162,7 +178,7 @@ inline void Synth::update(){
   }
   
   // Modulator frequency
-  int modulatorFrequency = map(analogRead(3), 0, 1023, 100, 2000);
+  int modulatorFrequency = map(analogRead(this->modulatorFrequencyPin), 0, 1023, 100, 2000);
   if(this->modulatorFrequency != modulatorFrequency){
     this->modulatorFrequency = modulatorFrequency;
     for (int i = 0; i < voiceCount ; i++) {
@@ -171,7 +187,7 @@ inline void Synth::update(){
   }
   
   // Modulator amplitude
-  float modulatorAmplitude = (float)analogRead(4)/1000;
+  float modulatorAmplitude = (float)analogRead(this->modulatorAmplitudePin)/1000;
   if(this->modulatorAmplitude != modulatorAmplitude){
     this->modulatorAmplitude = modulatorAmplitude;
     for (int i = 0; i < voiceCount ; i++) {
