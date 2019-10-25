@@ -17,6 +17,8 @@ class Voice{
     AudioEffectEnvelope *env2;
     AudioConnection* patchCords[7];
     AudioMixer4 *output;
+    byte note;
+    bool notePlayed;
 
   public:
     Voice();
@@ -29,6 +31,8 @@ class Voice{
     void noteOff();
     void setADR(unsigned int attack, unsigned int decay, unsigned int release);
     bool isActive();
+    bool isNotePlayed();
+    void setNotePlayed(bool notePlayed);
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
     void setAttack(int att);
@@ -72,6 +76,7 @@ inline Voice::Voice(){
   this->patchCords[4] = new AudioConnection(*this->oscFm2, 0, *this->env2, 0);
   this->patchCords[5] = new AudioConnection(*this->env2, 0, *this->output, 1);
 
+  this->notePlayed = false;
 }
 
 /**
@@ -94,7 +99,7 @@ inline AudioMixer4 * Voice::getOutput(){
 }
 
 /**
- * Note one
+ * Note on
  */
 inline void Voice::noteOn(byte midiNote) {
   float freq = 440.0 * powf(2.0, (float)(midiNote - 69) * 0.08333333);
@@ -104,6 +109,7 @@ inline void Voice::noteOn(byte midiNote) {
   this->env->noteOn();
   this->env2->noteOn();
   this->last_played = millis();
+  this->notePlayed=true;
 }
 
 /**
@@ -119,6 +125,14 @@ inline void Voice::noteOff() {
  */
 inline bool Voice::isActive(){
   return this->env->isActive();
+}
+
+inline bool Voice::isNotePlayed(){
+  return this->notePlayed;
+}
+
+inline void Voice::setNotePlayed(bool notePlayed){
+  this->notePlayed = notePlayed;
 }
 
 

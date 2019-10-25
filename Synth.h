@@ -34,6 +34,7 @@ class Synth{
     void noteOff(byte midiNote);
     void stop();
     void update();
+    Voice **getVoices();
     AudioMixer4 * getOutput();
 
 };
@@ -132,7 +133,7 @@ inline AudioMixer4 * Synth::getOutput(){
  * Update
  */
 inline void Synth::update(){
-
+    
   // Attack
   int attack = map(analogRead(0), 0, 1023, 0, 2000);
   if(this->attack != attack){
@@ -177,7 +178,10 @@ inline void Synth::update(){
       this->voices[i]->setModulatorAmplitude(modulatorAmplitude);
     }
   }
-  
+}
+
+inline Voice** Synth::getVoices(){
+  return this->voices;
 }
 
 #endif
