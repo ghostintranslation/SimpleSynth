@@ -11,7 +11,7 @@ bool controllerIsLaunchpad = true;
 const int interval_time = 50;
 elapsedMillis clock_count;
 
-Synth synth;
+Synth synth(0, 1, 2, 3, 4);
 
 AudioOutputI2S  i2s2;
 AudioConnection patchCord1(*synth.getOutput(), 0, i2s2, 0);
