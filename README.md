@@ -34,16 +34,16 @@ First download or clone this repository and open it in Arduino.
 
 Follow this schema to connect all the parts together:
 
-```
-... coming soon
-```
+![breadboard](images/breadboard.png?raw=true "Breadboard schematics")
 
 Now you are all set, just upload the code to the Teensy and play with it!
 
 ## TODO
 * Find a way to detect the MIDI controller name, to activate the Launchpad specific code automatically
-* Add a volume potentiometer
+* Add a 3 way switch to select mode: Drone, Synth, Arpeggiator
 * Add a mix potentiometer to switch between the current sine wave and a triangle wave
+* Add an octave potentiometer
+* Add a fine potentiometer
 * Add a Monophonic mode
 * Add a Glide/Legato option in the Monophonic mode
 * Add a frequency sync mode to the modulator
