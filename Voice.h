@@ -46,15 +46,15 @@ class Voice{
 inline Voice::Voice(){
 
   this->osc = new AudioSynthWaveformSine();
-  this->osc->amplitude(0.1);
-  this->osc->frequency(1200);
+  this->osc->amplitude(0);
+  this->osc->frequency(0);
   
   this->oscFm = new AudioSynthWaveformSineModulated();
   this->oscFm->amplitude(1);
   
   this->osc2 = new AudioSynthWaveformSine();
-  this->osc2->amplitude(0.005);
-  this->osc2->frequency(1200);
+  this->osc2->amplitude(0);
+  this->osc2->frequency(0);
   
   this->oscFm2 = new AudioSynthWaveformModulated();
   this->oscFm2->begin(WAVEFORM_SAWTOOTH);
@@ -67,7 +67,7 @@ inline Voice::Voice(){
 
   this->output = new AudioMixer4();
   this->output->gain(0, 0.3 ); // TODO Link to a potentiometer
-  this->output->gain(1, 0 ); // TODO Link to a potentiometer
+  this->output->gain(1, 0.05 ); // TODO Link to a potentiometer
   
   this->patchCords[0] = new AudioConnection(*this->osc, 0, *this->oscFm, 0);
   this->patchCords[1] = new AudioConnection(*this->oscFm, 0, *this->env, 0);
