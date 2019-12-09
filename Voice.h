@@ -6,17 +6,64 @@
 /*
  * Voice
  */
-class Voice{
 
+
+// GUItool: begin automatically generated code
+//AudioSynthWaveform       sineAM;      //xy=72.55555725097656,171.33334350585938
+//AudioSynthWaveformDc     dcAM;            //xy=74,104
+//AudioSynthWaveform       sawtoothAM;      //xy=85.77777862548828,217.33334350585938
+//AudioSynthWaveformSine   sineModulator;          //xy=100,344
+//AudioMixer4              mixerAM;         //xy=242.88888549804688,190.22222900390625
+//AudioSynthWaveformModulated sineFM;   //xy=289,344
+//AudioSynthWaveformModulated sawtoothFM;   //xy=300,408
+//AudioEffectMultiply      multiplyAM;      //xy=388,196
+//AudioMixer4              mixerFM;         //xy=454,368
+//AudioMixer4              mixerDcAM;         //xy=522,127
+//AudioMixer4              mixer;         //xy=575,233
+//AudioEffectEnvelope      envelope;      //xy=711.7777709960938,236.33334350585938
+//AudioOutputI2S           i2s2;           //xy=713.4444580078125,331.6666564941406
+//AudioConnection          patchCord1(sineAM, 0, mixerAM, 0);
+//AudioConnection          patchCord2(dcAM, 0, mixerDcAM, 0);
+//AudioConnection          patchCord3(sawtoothAM, 0, mixerAM, 1);
+//AudioConnection          patchCord4(sineModulator, 0, multiplyAM, 1);
+//AudioConnection          patchCord5(sineModulator, 0, sawtoothFM, 0);
+//AudioConnection          patchCord6(sineModulator, 0, sineFM, 0);
+//AudioConnection          patchCord7(mixerAM, 0, multiplyAM, 0);
+//AudioConnection          patchCord8(sineFM, 0, mixerFM, 0);
+//AudioConnection          patchCord9(sawtoothFM, 0, mixerFM, 1);
+//AudioConnection          patchCord10(multiplyAM, 0, mixerDcAM, 1);
+//AudioConnection          patchCord11(mixerFM, 0, mixer, 1);
+//AudioConnection          patchCord12(mixerDcAM, 0, mixer, 0);
+//AudioConnection          patchCord13(mixer, envelope);
+//AudioConnection          patchCord14(envelope, 0, i2s2, 0);
+//AudioConnection          patchCord15(envelope, 0, i2s2, 1);
+// GUItool: end automatically generated code
+
+
+class Voice{
   private:
-    AudioSynthWaveformSine *osc;
-    AudioSynthWaveformSineModulated *oscFm;
-    AudioSynthWaveformSine *osc2;
-    AudioSynthWaveformModulated *oscFm2;
-    AudioEffectEnvelope *env;
-    AudioEffectEnvelope *env2;
-    AudioConnection* patchCords[7];
+    // AM and Ring
+    AudioSynthWaveformDc     *dcAM;
+    AudioSynthWaveform       *sawtoothAM;
+    AudioSynthWaveform       *sineAM;
+    AudioEffectMultiply      *multiplyAM;
+    AudioMixer4              *mixerAM;
+    AudioMixer4              *mixerAM2;
+    AudioMixer4              *mixerDcMod;
+    // FM
+    AudioSynthWaveformModulated *sineFM;
+    AudioSynthWaveformModulated *sawtoothFM;
+    AudioMixer4              *mixerFM;
+    // Common
+    AudioSynthWaveformSine   *sineModulator;
+    AudioMixer4              *mixer;
+    AudioEffectEnvelope      *envelope;
+    AudioConnection* patchCords[16];
+    // Output
     AudioMixer4 *output;
+    
+    enum synthesis { FM, FMx10, AM, AMx10, RING };
+    synthesis synth;
     byte note;
     bool notePlayed;
 
@@ -33,6 +80,7 @@ class Voice{
     bool isActive();
     bool isNotePlayed();
     void setNotePlayed(bool notePlayed);
+    void setSynth(byte synth);
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
     void setAttack(int att);
@@ -44,38 +92,59 @@ class Voice{
  * Constructor
  */
 inline Voice::Voice(){
-
-  this->osc = new AudioSynthWaveformSine();
-  this->osc->amplitude(0);
-  this->osc->frequency(0);
-  
-  this->oscFm = new AudioSynthWaveformSineModulated();
-  this->oscFm->amplitude(1);
-  
-  this->osc2 = new AudioSynthWaveformSine();
-  this->osc2->amplitude(0);
-  this->osc2->frequency(0);
-  
-  this->oscFm2 = new AudioSynthWaveformModulated();
-  this->oscFm2->begin(WAVEFORM_SAWTOOTH);
-  this->oscFm2->amplitude(1);
-
-  this->env = new AudioEffectEnvelope();
-  this->env->releaseNoteOn(4);
-  this->env2 = new AudioEffectEnvelope();
-  this->env2->releaseNoteOn(4);
-
+  // AM and Ring
+  this->dcAM = new AudioSynthWaveformDc();
+  this->dcAM->amplitude(0.5);
+  this->sineAM = new AudioSynthWaveform();
+  this->sineAM->amplitude(1);
+  this->sawtoothAM = new AudioSynthWaveform();
+  this->sawtoothAM->begin(WAVEFORM_SAWTOOTH);
+  this->sawtoothAM->amplitude(1);
+  this->multiplyAM = new AudioEffectMultiply();
+  this->mixerAM = new AudioMixer4();
+  this->mixerAM->gain(0, 0.5 ); // TODO Link to a potentiometer
+  this->mixerAM->gain(1, 0.5 ); // TODO Link to a potentiometer
+  this->mixerAM2 = new AudioMixer4();
+  this->mixerAM2->gain(0, 0);
+  this->mixerAM2->gain(1, 1);
+  this->mixerDcMod = new AudioMixer4();
+  this->mixerDcMod->gain(0, 0);
+  this->mixerDcMod->gain(1, 1);
+  // FM
+  this->sineFM = new AudioSynthWaveformModulated();
+  this->sineFM->amplitude(1);
+  this->sawtoothFM = new AudioSynthWaveformModulated();
+  this->sawtoothFM->begin(WAVEFORM_SAWTOOTH);
+  this->sawtoothFM->amplitude(1);
+  this->mixerFM = new AudioMixer4();
+  this->mixerFM->gain(0, 0.3 ); // TODO Link to a potentiometer
+  this->mixerFM->gain(1, 0.05 ); // TODO Link to a potentiometer
+  // Common
+  this->sineModulator = new AudioSynthWaveformSine();
+  this->mixer = new AudioMixer4();
+  this->mixer->gain(0, 1);
+  this->envelope = new AudioEffectEnvelope();
   this->output = new AudioMixer4();
-  this->output->gain(0, 0.3 ); // TODO Link to a potentiometer
-  this->output->gain(1, 0.05 ); // TODO Link to a potentiometer
-  
-  this->patchCords[0] = new AudioConnection(*this->osc, 0, *this->oscFm, 0);
-  this->patchCords[1] = new AudioConnection(*this->oscFm, 0, *this->env, 0);
-  this->patchCords[2] = new AudioConnection(*this->env, 0, *this->output, 0);
-  this->patchCords[3] = new AudioConnection(*this->osc2, 0, *this->oscFm2, 0);
-  this->patchCords[4] = new AudioConnection(*this->oscFm2, 0, *this->env2, 0);
-  this->patchCords[5] = new AudioConnection(*this->env2, 0, *this->output, 1);
+  this->output->gain(0, 1);
 
+  this->patchCords[0] = new AudioConnection(*this->sineAM, 0, *this->mixerAM, 0);
+  this->patchCords[1] = new AudioConnection(*this->sawtoothAM, 0, *this->mixerAM, 1);
+  this->patchCords[2] = new AudioConnection(*this->dcAM, 0, *this->mixerDcMod, 0);
+  this->patchCords[3] = new AudioConnection(*this->sineModulator, 0, *this->mixerDcMod, 1);
+  this->patchCords[4] = new AudioConnection(*this->mixerDcMod, 0, *this->multiplyAM, 1);
+  this->patchCords[5] = new AudioConnection(*this->sineModulator, 0, *this->sawtoothFM, 0);
+  this->patchCords[6] = new AudioConnection(*this->sineModulator, 0, *this->sineFM, 0);
+  this->patchCords[7] = new AudioConnection(*this->mixerAM, 0, *this->multiplyAM, 0);
+  this->patchCords[8] = new AudioConnection(*this->mixerAM, 0, *this->mixerAM2, 0);
+  this->patchCords[9] = new AudioConnection(*this->sineFM, 0, *this->mixerFM, 0);
+  this->patchCords[10] = new AudioConnection(*this->sawtoothFM, 0, *this->mixerFM, 1);
+  this->patchCords[11] = new AudioConnection(*this->multiplyAM, 0, *this->mixerAM2, 1);
+  this->patchCords[12] = new AudioConnection(*this->mixerFM, 0, *this->mixer, 1);
+  this->patchCords[13] = new AudioConnection(*this->mixerAM2, 0, *this->mixer, 0);
+  this->patchCords[14] = new AudioConnection(*this->mixer, 0, *this->envelope, 0);
+  this->patchCords[15] = new AudioConnection(*this->envelope, 0, *this->output, 0);
+
+  this->setSynth(0);
   this->notePlayed = false;
 }
 
@@ -83,12 +152,9 @@ inline Voice::Voice(){
  * Set Attack Decay Release
  */
 inline void Voice::setADR(unsigned int attack, unsigned int decay, unsigned int release){
-  this->env->attack(attack);
-  this->env->decay(decay);
-  this->env->release(release);
-  this->env2->attack(attack);
-  this->env2->decay(decay);
-  this->env2->release(release);
+  this->envelope->attack(attack);
+  this->envelope->decay(decay);
+  this->envelope->release(release);
 }
 
 /**
@@ -103,11 +169,12 @@ inline AudioMixer4 * Voice::getOutput(){
  */
 inline void Voice::noteOn(byte midiNote) {
   float freq = 440.0 * powf(2.0, (float)(midiNote - 69) * 0.08333333);
-  this->oscFm->frequency(freq);
-  this->oscFm2->frequency(freq);
+  this->sawtoothAM->frequency(freq);
+  this->sineAM->frequency(freq);
+  this->sawtoothFM->frequency(freq);
+  this->sineFM->frequency(freq);
   this->currentNote = midiNote;
-  this->env->noteOn();
-  this->env2->noteOn();
+  this->envelope->noteOn();
   this->last_played = millis();
   this->notePlayed=true;
 }
@@ -116,15 +183,14 @@ inline void Voice::noteOn(byte midiNote) {
  * Note off
  */
 inline void Voice::noteOff() {
-  this->env->noteOff();
-  this->env2->noteOff();
+  this->envelope->noteOff();
 }
 
 /**
  * Is the voice active
  */
 inline bool Voice::isActive(){
-  return this->env->isActive();
+  return this->envelope->isActive();
 }
 
 inline bool Voice::isNotePlayed(){
@@ -136,24 +202,79 @@ inline void Voice::setNotePlayed(bool notePlayed){
 }
 
 
+/**
+ * Set the synth
+ */
+inline void Voice::setSynth(byte synthValue){
+  // Set the synth
+  switch(synthValue){
+    case 0 : this->synth = FM;    break;
+    case 1 : this->synth = FMx10; break;
+    case 2 : this->synth = AM;    break;
+    case 3 : this->synth = AMx10; break;
+    case 4 : this->synth = RING;  break;
+  }
+
+  // Init the mixers gain to 0
+  this->mixer->gain(0, 0 );
+  this->mixer->gain(1, 0 );
+  this->mixerDcMod->gain(0, 0);
+
+  // Set the values according to the synth
+  switch(this->synth){
+    case FM:
+    case FMx10:
+      this->mixer->gain(1, 1 );
+    break;
+    case AM:
+    case AMx10:
+      this->mixerDcMod->gain(0, 1);
+      this->mixer->gain(0, 1 );
+    break;
+    case RING:
+      this->mixer->gain(0, 1 );
+    break;
+  }
+}
+
+/**
+ * Set the modulaor frequency
+ */
 inline void Voice::setModulatorFrequency(int freq){
-  this->osc->frequency(freq);
-  this->osc2->frequency(freq);
+  switch(this->synth){
+    case FM:
+    case AM:
+      this->sineModulator->frequency(freq);
+    break;
+    case FMx10:
+    case AMx10:
+    case RING:
+      this->sineModulator->frequency(freq*10);
+    break;
+  }
 }
 inline void Voice::setModulatorAmplitude(float amp){
-  this->osc->amplitude(amp);
-  this->osc2->amplitude(amp);
+  // In AM sineModulator amplitude should be fixed at 0.5 and dcAM too
+  switch(this->synth){
+    case AM:
+    case AMx10:
+      this->sineModulator->amplitude(0.5);
+    break;
+    default:
+      this->sineModulator->amplitude(amp);
+    break;
+  }
+  
+  this->mixerAM2->gain(0, 1 - amp*4);
+  this->mixerAM2->gain(1, amp*4);
 }
 inline void Voice::setAttack(int att){
-  this->env->attack(att);
-  this->env2->attack(att);
+  this->envelope->attack(att);
 }
 inline void Voice::setDecay(int dec){
-  this->env->decay(dec);
-  this->env2->decay(dec);
+  this->envelope->decay(dec);
 }
 inline void Voice::setRelease(int rel){
-  this->env->release(rel);
-  this->env2->release(rel);
+  this->envelope->release(rel);
 }
 #endif
