@@ -8,36 +8,46 @@
  */
 
 
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
+
 // GUItool: begin automatically generated code
-//AudioSynthWaveform       sineAM;      //xy=72.55555725097656,171.33334350585938
-//AudioSynthWaveformDc     dcAM;            //xy=74,104
-//AudioSynthWaveform       sawtoothAM;      //xy=85.77777862548828,217.33334350585938
+//AudioSynthWaveform       sineAM;      //xy=67.55555725097656,94.33334350585938
+//AudioSynthWaveformDc     dcAM;            //xy=70,217
+//AudioSynthWaveform       sawtoothAM;      //xy=80.77777862548828,140.33334350585938
 //AudioSynthWaveformSine   sineModulator;          //xy=100,344
-//AudioMixer4              mixerAM;         //xy=242.88888549804688,190.22222900390625
+//AudioMixer4              mixerDcMod;         //xy=234,232
+//AudioMixer4              mixerAM;         //xy=237.88888549804688,113.22222900390625
 //AudioSynthWaveformModulated sineFM;   //xy=289,344
 //AudioSynthWaveformModulated sawtoothFM;   //xy=300,408
 //AudioEffectMultiply      multiplyAM;      //xy=388,196
 //AudioMixer4              mixerFM;         //xy=454,368
-//AudioMixer4              mixerDcAM;         //xy=522,127
+//AudioMixer4              mixerAM2;         //xy=524,105
 //AudioMixer4              mixer;         //xy=575,233
 //AudioEffectEnvelope      envelope;      //xy=711.7777709960938,236.33334350585938
 //AudioOutputI2S           i2s2;           //xy=713.4444580078125,331.6666564941406
 //AudioConnection          patchCord1(sineAM, 0, mixerAM, 0);
-//AudioConnection          patchCord2(dcAM, 0, mixerDcAM, 0);
+//AudioConnection          patchCord2(dcAM, 0, mixerDcMod, 0);
 //AudioConnection          patchCord3(sawtoothAM, 0, mixerAM, 1);
-//AudioConnection          patchCord4(sineModulator, 0, multiplyAM, 1);
-//AudioConnection          patchCord5(sineModulator, 0, sawtoothFM, 0);
-//AudioConnection          patchCord6(sineModulator, 0, sineFM, 0);
-//AudioConnection          patchCord7(mixerAM, 0, multiplyAM, 0);
-//AudioConnection          patchCord8(sineFM, 0, mixerFM, 0);
-//AudioConnection          patchCord9(sawtoothFM, 0, mixerFM, 1);
-//AudioConnection          patchCord10(multiplyAM, 0, mixerDcAM, 1);
-//AudioConnection          patchCord11(mixerFM, 0, mixer, 1);
-//AudioConnection          patchCord12(mixerDcAM, 0, mixer, 0);
-//AudioConnection          patchCord13(mixer, envelope);
-//AudioConnection          patchCord14(envelope, 0, i2s2, 0);
-//AudioConnection          patchCord15(envelope, 0, i2s2, 1);
+//AudioConnection          patchCord4(sineModulator, 0, sawtoothFM, 0);
+//AudioConnection          patchCord5(sineModulator, 0, sineFM, 0);
+//AudioConnection          patchCord6(sineModulator, 0, mixerDcMod, 1);
+//AudioConnection          patchCord7(mixerDcMod, 0, multiplyAM, 1);
+//AudioConnection          patchCord8(mixerAM, 0, multiplyAM, 0);
+//AudioConnection          patchCord9(mixerAM, 0, mixerAM2, 0);
+//AudioConnection          patchCord10(sineFM, 0, mixerFM, 0);
+//AudioConnection          patchCord11(sawtoothFM, 0, mixerFM, 1);
+//AudioConnection          patchCord12(multiplyAM, 0, mixerAM2, 1);
+//AudioConnection          patchCord13(mixerFM, 0, mixer, 1);
+//AudioConnection          patchCord14(mixerAM2, 0, mixer, 0);
+//AudioConnection          patchCord15(mixer, envelope);
+//AudioConnection          patchCord16(envelope, 0, i2s2, 0);
+//AudioConnection          patchCord17(envelope, 0, i2s2, 1);
 // GUItool: end automatically generated code
+
 
 
 class Voice{
