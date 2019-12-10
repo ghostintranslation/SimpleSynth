@@ -18,6 +18,7 @@ class Synth{
     Voice *voices[voiceCount];
     
     byte synthesis;
+    byte mode;
     unsigned int attack;
     unsigned int decay;
     unsigned int release;
@@ -117,25 +118,30 @@ inline void Synth::noteOn(byte note){
   int oldestVoice = 0;
   unsigned long oldestVoiceTime = 0;
   unsigned long currentTime = millis();
-  
-  for (int i = 0; i < voiceCount; i++) {
-    // Search for the oldest voice
-    if(this->voices[i]->last_played > oldestVoiceTime){
-      oldestVoiceTime = this->voices[i]->last_played;
-      oldestVoice = i;
-    }
-    
-    // Search for an inactive voice
-    if(!this->voices[i]->isActive()){
-      this->voices[i]->noteOn(note);
-      foundOne = true;
-      break;
-    }
-  }
 
-  // No inactive voice then will take over the oldest note
-  if(!foundOne){
-    this->voices[oldestVoice]->noteOn(note);
+  // In Drone mode, only one voice playing at a time
+  if(this->mode == 2){ // TODO: Maybe have the enums outside the Voice to use it here too
+    this->voices[0]->noteOn(note);
+  }else{
+    for (int i = 0; i < voiceCount; i++) {
+      // Search for the oldest voice
+      if(this->voices[i]->last_played > oldestVoiceTime){
+        oldestVoiceTime = this->voices[i]->last_played;
+        oldestVoice = i;
+      }
+      
+      // Search for an inactive voice
+      if(!this->voices[i]->isActive()){
+        this->voices[i]->noteOn(note);
+        foundOne = true;
+        break;
+      }
+    }
+  
+    // No inactive voice then will take over the oldest note
+    if(!foundOne){
+      this->voices[oldestVoice]->noteOn(note);
+    }
   }
 }
 
@@ -176,9 +182,38 @@ inline void Synth::update(){
   byte synthesis = (byte)map(analogRead(this->synthPin), 0, 1023, 0, 4);
   if(this->synthesis != synthesis){
     this->synthesis = synthesis;
-    Serial.println(synthesis);
     for (int i = 0; i < voiceCount ; i++) {
       this->voices[i]->setSynth(synthesis);
+    }
+  }
+
+  // Mode
+  byte mode = (byte)map(analogRead(this->modePin), 0, 1023, 0, 2);
+  if(this->mode != mode){
+    this->mode = mode;
+    Serial.println(mode);
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->setMode(mode);
+    }
+
+    if(this->mode == 2){
+      this->mixers[0]->gain(0, 0.6 );
+      this->mixers[0]->gain(1, 0 );
+      this->mixers[0]->gain(2, 0 );
+      this->mixers[0]->gain(3, 0 );
+      this->output->gain(0, 1 );
+      this->output->gain(1, 0 );
+      this->output->gain(2, 0 );
+      this->output->gain(3, 0 );
+    }else{
+      this->mixers[0]->gain(0, 0.6 );
+      this->mixers[0]->gain(1, 0.6 );
+      this->mixers[0]->gain(2, 0.6 );
+      this->mixers[0]->gain(3, 0.6 );
+      this->output->gain(0, 1 );
+      this->output->gain(1, 1 );
+      this->output->gain(2, 1 );
+      this->output->gain(3, 1 );
     }
   }
   

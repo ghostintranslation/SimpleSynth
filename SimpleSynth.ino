@@ -11,7 +11,7 @@ bool controllerIsLaunchpad = true;
 const int interval_time = 50;
 elapsedMillis clock_count;
 
-Synth synth(0, 8, 7, 1, 2, 5, 3, 4, 5);
+Synth synth(0, 1, 7, 2, 3, 8, 4, 5, 6);
 //
 AudioOutputI2S  i2s2;
 AudioConnection patchCord1(*synth.getOutput(), 0, i2s2, 0);
@@ -41,7 +41,7 @@ void setup() {
 
   
   // Audio connections require memory to work.
-  AudioMemory(30);
+  AudioMemory(50);
 
   sgtl5000_1.enable();
   sgtl5000_1.volume(2);

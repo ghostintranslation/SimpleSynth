@@ -7,13 +7,6 @@
  * Voice
  */
 
-
-#include <Audio.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <SerialFlash.h>
-
 // GUItool: begin automatically generated code
 //AudioSynthWaveform       sineAM;      //xy=67.55555725097656,94.33334350585938
 //AudioSynthWaveformDc     dcAM;            //xy=70,217
@@ -27,8 +20,9 @@
 //AudioMixer4              mixerFM;         //xy=454,368
 //AudioMixer4              mixerAM2;         //xy=524,105
 //AudioMixer4              mixer;         //xy=575,233
-//AudioEffectEnvelope      envelope;      //xy=711.7777709960938,236.33334350585938
-//AudioOutputI2S           i2s2;           //xy=713.4444580078125,331.6666564941406
+//AudioMixer4              output;         //xy=714,329
+//AudioOutputI2S           i2s2;           //xy=714.4444580078125,443.6666564941406
+//AudioEffectEnvelope      envelope;      //xy=724.7777709960938,232.33334350585938
 //AudioConnection          patchCord1(sineAM, 0, mixerAM, 0);
 //AudioConnection          patchCord2(dcAM, 0, mixerDcMod, 0);
 //AudioConnection          patchCord3(sawtoothAM, 0, mixerAM, 1);
@@ -44,8 +38,10 @@
 //AudioConnection          patchCord13(mixerFM, 0, mixer, 1);
 //AudioConnection          patchCord14(mixerAM2, 0, mixer, 0);
 //AudioConnection          patchCord15(mixer, envelope);
-//AudioConnection          patchCord16(envelope, 0, i2s2, 0);
-//AudioConnection          patchCord17(envelope, 0, i2s2, 1);
+//AudioConnection          patchCord16(mixer, 0, output, 1);
+//AudioConnection          patchCord17(output, 0, i2s2, 0);
+//AudioConnection          patchCord18(output, 0, i2s2, 1);
+//AudioConnection          patchCord19(envelope, 0, output, 0);
 // GUItool: end automatically generated code
 
 
@@ -68,12 +64,14 @@ class Voice{
     AudioSynthWaveformSine   *sineModulator;
     AudioMixer4              *mixer;
     AudioEffectEnvelope      *envelope;
-    AudioConnection* patchCords[16];
+    AudioConnection* patchCords[18];
     // Output
     AudioMixer4 *output;
     
-    enum synthesis { FM, FMx10, AM, AMx10, RING };
+    enum synthesis {FM, FMx10, AM, AMx10, RING};
+    enum modes {SYNTH, ARP, DRONE};
     synthesis synth;
+    modes mode;
     byte note;
     bool notePlayed;
 
@@ -91,6 +89,7 @@ class Voice{
     bool isNotePlayed();
     void setNotePlayed(bool notePlayed);
     void setSynth(byte synth);
+    void setMode(byte mode);
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
     void setAttack(int att);
@@ -135,7 +134,8 @@ inline Voice::Voice(){
   this->mixer->gain(0, 1);
   this->envelope = new AudioEffectEnvelope();
   this->output = new AudioMixer4();
-  this->output->gain(0, 1);
+  this->output->gain(0, 0);
+  this->output->gain(1, 1);
 
   this->patchCords[0] = new AudioConnection(*this->sineAM, 0, *this->mixerAM, 0);
   this->patchCords[1] = new AudioConnection(*this->sawtoothAM, 0, *this->mixerAM, 1);
@@ -153,8 +153,10 @@ inline Voice::Voice(){
   this->patchCords[13] = new AudioConnection(*this->mixerAM2, 0, *this->mixer, 0);
   this->patchCords[14] = new AudioConnection(*this->mixer, 0, *this->envelope, 0);
   this->patchCords[15] = new AudioConnection(*this->envelope, 0, *this->output, 0);
+  this->patchCords[16] = new AudioConnection(*this->mixer, 0, *this->output, 1);
 
   this->setSynth(0);
+  this->setMode(0);
   this->notePlayed = false;
 }
 
@@ -243,6 +245,34 @@ inline void Voice::setSynth(byte synthValue){
     break;
     case RING:
       this->mixer->gain(0, 1 );
+    break;
+  }
+}
+
+/**
+ * Set the mode
+ */
+inline void Voice::setMode(byte modeValue){
+  // Set the synth
+  switch(modeValue){
+    case 0 : this->mode = SYNTH; break;
+    case 1 : this->mode = ARP;   break;
+    case 2 : this->mode = DRONE; break;
+  }
+
+  this->output->gain(0, 0);
+  this->output->gain(1, 0);
+  
+  // Set the values according to the mode
+  switch(this->mode){
+    case SYNTH:
+    case ARP:
+      this->output->gain(0, 1);
+      this->output->gain(1, 0);
+    break;
+    case DRONE:
+      this->output->gain(0, 0);
+      this->output->gain(1, 1);
     break;
   }
 }
