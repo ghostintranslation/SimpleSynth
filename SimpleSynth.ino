@@ -1,5 +1,14 @@
-#include <Audio.h>
+/*
+ __    _  _____   ___      ___ _  _     __    _ ______ _    
+/__|_|/ \(_  |     | |\|    | |_)|_||\|(_ |  |_| |  | / \|\|
+\_|| |\_/__) |    _|_| |    | | \| || |__)|__| | | _|_\_/| |
 
+https://ghostintranslation.bandcamp.com/
+https://www.instagram.com/ghostintranslation/
+https://github.com/ghostintranslation
+*/
+
+#include <Audio.h>
 #include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
@@ -11,11 +20,14 @@ bool controllerIsLaunchpad = true;
 const int interval_time = 50;
 elapsedMillis clock_count;
 
-Synth synth(0, 1, 2, 3, 4);
-
+Synth synth(0, 1, 2, 3, 4, 5, 6, 7, 8);
+//
 AudioOutputI2S  i2s2;
 AudioConnection patchCord1(*synth.getOutput(), 0, i2s2, 0);
 AudioConnection patchCord2(*synth.getOutput(), 0, i2s2, 1);
+AudioOutputUSB           usb1;
+AudioConnection          patchCord3(*synth.getOutput(), 0, usb1, 0);
+AudioConnection          patchCord4(*synth.getOutput(), 0, usb1, 1);
 
 AudioControlSGTL5000 sgtl5000_1;
 
@@ -23,7 +35,6 @@ AudioControlSGTL5000 sgtl5000_1;
  * Setup
  */
 void setup() {
-  
   Serial.begin(115200);
   
   pinMode(ledPin, OUTPUT);
@@ -39,10 +50,10 @@ void setup() {
 
   
   // Audio connections require memory to work.
-  AudioMemory(20);
+  AudioMemory(40);
 
   sgtl5000_1.enable();
-  sgtl5000_1.volume(1);
+  sgtl5000_1.volume(2);
   
   while (!Serial && millis() < 2500); // wait for serial monitor
 
@@ -133,4 +144,3 @@ byte noteToLaunchpadNote(byte note){
   //byte launchpadNote = this->currentNote%8 + (this->currentNote/8 * 16);
   return note/16*8 + note%8;
 }
-
