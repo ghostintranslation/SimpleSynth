@@ -29,7 +29,7 @@ What things you need to make it work:
 ```
 Teensy 3.2
 Teensy audio board
-5 potentiometers
+9 potentiometers
 ```
 
 ### Installing
