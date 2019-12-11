@@ -84,6 +84,16 @@ SimpleSynth offers 3 types of synthesis:
 * **Amplitude Modulation**: the amplitude is modulated. When done slow it sounds like a tremolo. When done fast... well it sounds differently.
 * **Ring Modulation**: Similar to AM but instead of modulating the amplitude between 1 and 0, it is modulated between 1 and -1, thus the signal gets also inverted. It sounds like a different type of bells :)
 
+### Audio design tool
+
+Here is the schema from the audio design tool used in each voice:
+
+![breadboard](images/audio-design-tool.png?raw=true "Audio design tool")
+
+This could be optimized. For example, instead of using 5 oscillators (2 for FM, 2 for AM/Ring, and 1 to modulate) it could be 3: 1 sine, 1 sawtooth, 1 modulator. With that we could even use FM and AM/Ring together.
+
+This is a priority TODO because the synth reaches the limit of Teensy 3.2 as to be a good polyphonic synth it requires at least 8 voices, so 8*5 oscillators = 40 oscilators and that seems to be too much for this chip.
+
 ## In action
 Click on the images to watch the videos:
 
