@@ -23,6 +23,11 @@ class Synth{
     byte synthesis;
     byte mode;
     int parameter;
+    unsigned int arpTime;
+    elapsedMillis elapsedTime;
+    byte arpIndex;
+    byte arpNotesPlaying;
+    byte arpNotes[voiceCount];
     unsigned int attack;
     unsigned int decay;
     unsigned int release;
@@ -45,7 +50,6 @@ class Synth{
     Synth();
     Synth(byte synthPin, byte modePin, byte parameterPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin);
 
-    void init();
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
     void stop();
@@ -101,51 +105,49 @@ inline Synth::Synth(byte synthPin, byte modePin, byte parameterPin, byte modulat
   this->releasePin = releasePin;
 }
 
-inline void Synth::init(){
-  
-//  Serial.println("init");
-//  for (int i = 0; i < voiceCount; i++) {
-//  Serial.println("new Voice");
-//    this->voices[i] = new Voice();
-//  Serial.println("setADR");
-//    this->voices[i]->setADR(this->attack, this->decay, this->release);
-//  Serial.println("Voice AudioConnection");
-//    this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutput(), 0, *this->mixers[i/4], i%4);
-//  }
-}
 
 /**
  * Note on
  */
 inline void Synth::noteOn(byte note){
+  
   bool foundOne = false;
   int oldestVoice = 0;
   unsigned long oldestVoiceTime = 0;
   unsigned long currentTime = millis();
 
-  // In Drone mode, only one voice playing at a time
-  if(modes(this->mode) == DRONE){
-    this->voices[0]->noteOn(note);
-  }else{
-    for (int i = 0; i < voiceCount; i++) {
-      // Search for the oldest voice
-      if(this->voices[i]->last_played > oldestVoiceTime){
-        oldestVoiceTime = this->voices[i]->last_played;
-        oldestVoice = i;
+  switch (modes(this->mode)){
+    case SYNTH: 
+      for (int i = 0; i < voiceCount; i++) {
+        // Search for the oldest voice
+        if(this->voices[i]->last_played > oldestVoiceTime){
+          oldestVoiceTime = this->voices[i]->last_played;
+          oldestVoice = i;
+        }
+        
+        // Search for an inactive voice
+        if(!this->voices[i]->isActive()){
+          this->voices[i]->noteOn(note);
+          foundOne = true;
+          break;
+        }
       }
-      
-      // Search for an inactive voice
-      if(!this->voices[i]->isActive()){
-        this->voices[i]->noteOn(note);
-        foundOne = true;
-        break;
+    
+      // No inactive voice then will take over the oldest note
+      if(!foundOne){
+        this->voices[oldestVoice]->noteOn(note);
       }
-    }
-  
-    // No inactive voice then will take over the oldest note
-    if(!foundOne){
-      this->voices[oldestVoice]->noteOn(note);
-    }
+    break;
+    case ARP:
+      if(this->arpNotesPlaying < voiceCount){
+        this->arpNotesPlaying++;
+      }
+      this->arpNotes[this->arpNotesPlaying-1] = note;
+    break;
+    case DRONE:
+      // In Drone mode, only one voice playing at a time
+      this->voices[0]->noteOn(note);
+    break;
   }
 }
 
@@ -153,10 +155,30 @@ inline void Synth::noteOn(byte note){
  * Note off
  */
 inline void Synth::noteOff(byte note){
-  for (int i = 0; i < voiceCount ; i++) {
-    if(this->voices[i]->currentNote == note){
-      this->voices[i]->noteOff();
-    }
+  switch(modes(this->mode)){
+    case SYNTH: 
+      for (int i = 0; i < voiceCount ; i++) {
+        if(this->voices[i]->currentNote == note){
+          this->voices[i]->noteOff();
+        }
+      }
+    break;
+    case ARP:
+      for (int i = 0; i < voiceCount ; i++) {
+        // Finding the index where the note was in the array
+        if(this->arpNotes[i] == note){
+          // Shifting the elemts after this index
+          for (int j = i; j < voiceCount; ++j){
+            this->arpNotes[j] = this->arpNotes[j + 1];
+          }
+        }
+      }
+
+      // Decreasing the number of playing notes
+      if(this->arpNotesPlaying > 0){
+        this->arpNotesPlaying--;
+      }
+    break;
   }
 }
 
@@ -231,6 +253,7 @@ inline void Synth::update(){
       break;
       case ARP: 
         // Time
+        this->arpTime = map(parameter, 0, 1023, 1, 500);
       break;
       case DRONE: 
         // Free frequency
@@ -240,11 +263,30 @@ inline void Synth::update(){
       break;
     }
   }
+
+  // Arp
+  if(modes(this->mode) == ARP){
+    if (this->elapsedTime >= this->arpTime) {
+
+      if(this->arpNotesPlaying > 0){
+        this->voices[0]->noteOn(this->arpNotes[this->arpIndex]);
+      }
+      
+        
+      this->arpIndex++;
+      if(this->arpIndex > this->arpNotesPlaying-1 ){
+        this->arpIndex = 0;
+      }
+      
+      this->elapsedTime = 0;
+    }
+  }
     
   
   // Attack
   // TODO This should send a standardized value from 0 to 1023
   int attack = map(analogRead(this->attackPin), 0, 1023, 0, 2000);
+  attack=0;//TODO: REMOVE THAT
   if(this->attack != attack){
     this->attack = attack;
     for (int i = 0; i < voiceCount ; i++) {

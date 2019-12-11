@@ -48,8 +48,6 @@ void setup() {
   
   while (!Serial && millis() < 2500); // wait for serial monitor
 
-  synth.init();
-  
   // Starting sequence
   Serial.println("Ready!");
   
