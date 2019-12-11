@@ -90,6 +90,8 @@ Here is the schema from the audio design tool used in each voice:
 
 ![breadboard](images/audio-design-tool.png?raw=true "Audio design tool")
 
+https://www.pjrc.com/teensy/gui/
+
 This could be optimized. For example, instead of using 5 oscillators (2 for FM, 2 for AM/Ring, and 1 to modulate) it could be 3: 1 sine, 1 sawtooth, 1 modulator. With that we could even use FM and AM/Ring together.
 
 This is a priority TODO because the synth reaches the limit of Teensy 3.2 as to be a good polyphonic synth it requires at least 8 voices, so 8*5 oscillators = 40 oscilators and that seems to be too much for this chip.
