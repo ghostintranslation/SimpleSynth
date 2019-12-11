@@ -7,7 +7,10 @@
 
 
 // Number of voices
-const byte voiceCount = 8; // max = 16
+// Reduced number of voices because it breaks on Teensy 3.2 .
+// This will need more testings with Teensy 4.0 to confirm that it is a memory issue
+const byte voiceCount = 4; // max = 16
+
 
 /*
  * Synth
@@ -19,6 +22,7 @@ class Synth{
     
     byte synthesis;
     byte mode;
+    int parameter;
     unsigned int attack;
     unsigned int decay;
     unsigned int release;
@@ -26,7 +30,7 @@ class Synth{
     float modulatorAmplitude;
     byte synthPin;
     byte modePin;
-    byte functionPin;
+    byte parameterPin;
     byte modulatorFrequencyPin;
     byte modulatorAmplitudePin;
     byte attackPin;
@@ -39,7 +43,7 @@ class Synth{
     
   public:
     Synth();
-    Synth(byte synthPin, byte modePin, byte functionPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin);
+    Synth(byte synthPin, byte modePin, byte parameterPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin);
 
     void init();
     void noteOn(byte midiNote);
@@ -86,10 +90,10 @@ inline Synth::Synth(){
 /**
  * Constructor that sets the potentiometer pins
  */
-inline Synth::Synth(byte synthPin, byte modePin, byte functionPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin): Synth(){
+inline Synth::Synth(byte synthPin, byte modePin, byte parameterPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin): Synth(){
   this->synthPin = synthPin;
   this->modePin = modePin;
-  this->functionPin = functionPin;
+  this->parameterPin = parameterPin;
   this->modulatorFrequencyPin = modulatorFrequencyPin;
   this->modulatorAmplitudePin = modulatorAmplitudePin;
   this->attackPin = attackPin;
@@ -120,7 +124,7 @@ inline void Synth::noteOn(byte note){
   unsigned long currentTime = millis();
 
   // In Drone mode, only one voice playing at a time
-  if(this->mode == 2){ // TODO: Maybe have the enums outside the Voice to use it here too
+  if(modes(this->mode) == DRONE){
     this->voices[0]->noteOn(note);
   }else{
     for (int i = 0; i < voiceCount; i++) {
@@ -191,12 +195,12 @@ inline void Synth::update(){
   byte mode = (byte)map(analogRead(this->modePin), 0, 1023, 0, 2);
   if(this->mode != mode){
     this->mode = mode;
-    Serial.println(mode);
+    
     for (int i = 0; i < voiceCount ; i++) {
       this->voices[i]->setMode(mode);
     }
 
-    if(this->mode == 2){
+    if(modes(this->mode) == DRONE){
       this->mixers[0]->gain(0, 0.6 );
       this->mixers[0]->gain(1, 0 );
       this->mixers[0]->gain(2, 0 );
@@ -216,6 +220,27 @@ inline void Synth::update(){
       this->output->gain(3, 1 );
     }
   }
+
+  // Parameter
+  int parameter = analogRead(this->parameterPin);
+  if(this->parameter != parameter){
+    this->parameter = parameter;
+    switch(modes(this->mode)){
+      case SYNTH: 
+        // Glide
+      break;
+      case ARP: 
+        // Time
+      break;
+      case DRONE: 
+        // Free frequency
+        for (int i = 0; i < voiceCount ; i++) {
+          this->voices[i]->setFrequency(parameter);
+        }
+      break;
+    }
+  }
+    
   
   // Attack
   // TODO This should send a standardized value from 0 to 1023

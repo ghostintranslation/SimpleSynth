@@ -3,9 +3,9 @@
 
 #include <Audio.h>
 
-/*
- * Voice
- */
+// Custom types
+enum synthesis {FM, FMx10, AM, AMx10, RING};
+enum modes {SYNTH, ARP, DRONE};
 
 // GUItool: begin automatically generated code
 //AudioSynthWaveform       sineAM;      //xy=67.55555725097656,94.33334350585938
@@ -45,7 +45,9 @@
 // GUItool: end automatically generated code
 
 
-
+/*
+ * Voice
+ */
 class Voice{
   private:
     // AM and Ring
@@ -67,9 +69,7 @@ class Voice{
     AudioConnection* patchCords[18];
     // Output
     AudioMixer4 *output;
-    
-    enum synthesis {FM, FMx10, AM, AMx10, RING};
-    enum modes {SYNTH, ARP, DRONE};
+
     synthesis synth;
     modes mode;
     byte note;
@@ -90,6 +90,7 @@ class Voice{
     void setNotePlayed(bool notePlayed);
     void setSynth(byte synth);
     void setMode(byte mode);
+    void setFrequency(int frequency);
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
     void setAttack(int att);
@@ -275,6 +276,16 @@ inline void Voice::setMode(byte modeValue){
       this->output->gain(1, 1);
     break;
   }
+}
+
+/**
+ * Set the modulaor frequency
+ */
+inline void Voice::setFrequency(int freq){
+  this->sineAM->frequency(freq);
+  this->sawtoothAM->frequency(freq);
+  this->sineFM->frequency(freq);
+  this->sawtoothFM->frequency(freq);
 }
 
 /**
