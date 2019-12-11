@@ -1,5 +1,14 @@
-#include <Audio.h>
+/*
+ __    _  _____   ___      ___ _  _     __    _ ______ _    
+/__|_|/ \(_  |     | |\|    | |_)|_||\|(_ |  |_| |  | / \|\|
+\_|| |\_/__) |    _|_| |    | | \| || |__)|__| | | _|_\_/| |
 
+https://ghostintranslation.bandcamp.com/
+https://www.instagram.com/ghostintranslation/
+https://github.com/ghostintranslation
+*/
+
+#include <Audio.h>
 #include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
