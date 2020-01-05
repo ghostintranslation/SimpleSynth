@@ -134,6 +134,7 @@ inline Voice::Voice(){
   this->mixer = new AudioMixer4();
   this->mixer->gain(0, 1);
   this->envelope = new AudioEffectEnvelope();
+  this->envelope->sustain(0.5);
   this->output = new AudioMixer4();
   this->output->gain(0, 0);
   this->output->gain(1, 1);
