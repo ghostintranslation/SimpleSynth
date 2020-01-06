@@ -286,7 +286,6 @@ inline void Synth::update(){
   // Attack
   // TODO This should send a standardized value from 0 to 1023
   int attack = map(analogRead(this->attackPin), 0, 1023, 0, 2000);
-  attack=0;//TODO: REMOVE THAT
   if(this->attack != attack){
     this->attack = attack;
     for (int i = 0; i < voiceCount ; i++) {

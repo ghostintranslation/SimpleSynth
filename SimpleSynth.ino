@@ -20,7 +20,7 @@ bool controllerIsLaunchpad = true;
 const int interval_time = 50;
 elapsedMillis clock_count;
 
-Synth synth(0, 1, 2, 3, 4, 5, 6, 7, 8);
+Synth synth(A0, A1, A2, A3, A4, A5, A6, A7, A8);
 //
 AudioOutputI2S  i2s2;
 AudioConnection patchCord1(*synth.getOutput(), 0, i2s2, 0);
@@ -53,7 +53,7 @@ void setup() {
   AudioMemory(40);
 
   sgtl5000_1.enable();
-  sgtl5000_1.volume(2);
+  sgtl5000_1.volume(0.5);
   
   while (!Serial && millis() < 2500); // wait for serial monitor
 
