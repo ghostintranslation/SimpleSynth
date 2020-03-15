@@ -12,6 +12,7 @@ https://github.com/ghostintranslation
 #include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
+#include "Input.h"
 #include "Synth.h"
 
 int ledPin = 13;
@@ -20,7 +21,17 @@ bool controllerIsLaunchpad = true;
 const int interval_time = 50;
 elapsedMillis clock_count;
 
-Synth synth(A0, A1, A2, A3, A4, A5, A6, A7, A8);
+Input synthInput(1, 0);
+Input modeInput(A1, 0, 1);
+Input parameterInput(A2, 0, 2);
+Input modulatorFrequencyInput(A5, 0, 5);
+Input modulatorAmplitudeInput(A4, 0, 4);
+Input mixInput(A3, 0, 3);
+Input attackInput(A8, 0, 8);
+Input decayInput(A6, 0, 6);
+Input releaseInput(A7, 1, 7);
+
+Synth synth(&synthInput, &modeInput, &parameterInput, &modulatorFrequencyInput, &modulatorAmplitudeInput, &mixInput, &attackInput, &decayInput, &releaseInput);
 //
 AudioOutputI2S  i2s2;
 AudioConnection patchCord1(*synth.getOutput(), 0, i2s2, 0);
@@ -45,6 +56,7 @@ void setup() {
   
   usbMIDI.setHandleNoteOn(onNoteOn);
   usbMIDI.setHandleNoteOff(onNoteOff);
+  usbMIDI.setHandleControlChange(onControlChange);
   usbMIDI.setHandleStop(onStop);
   usbMIDI.setHandleSystemReset(onStop);
 
@@ -130,13 +142,23 @@ void onStop() {
 }
 
 
-void myControlChange(byte channel, byte control, byte value){
-  Serial.print("myControlChange ");
+void onControlChange(byte channel, byte control, byte value){
+  Serial.print("onControlChange ");
   Serial.print(channel);
   Serial.print(" ");
   Serial.print(control);
   Serial.print(" ");
-  Serial.print(value);
+  Serial.println(value);
+
+  synthInput.handleMidi(channel, control, value);
+  modeInput.handleMidi(channel, control, value);
+  parameterInput.handleMidi(channel, control, value);
+  modulatorFrequencyInput.handleMidi(channel, control, value);
+  modulatorAmplitudeInput.handleMidi(channel, control, value);
+  mixInput.handleMidi(channel, control, value);
+  attackInput.handleMidi(channel, control, value);
+  decayInput.handleMidi(channel, control, value);
+  releaseInput.handleMidi(channel, control, value);
 }
 
 
