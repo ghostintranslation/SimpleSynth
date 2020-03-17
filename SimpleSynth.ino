@@ -52,6 +52,7 @@ void setup() {
   
   MIDI.setHandleNoteOn(onNoteOn);
   MIDI.setHandleNoteOff(onNoteOff);
+  MIDI.setHandleControlChange(onControlChange);
   MIDI.begin(MIDI_CHANNEL_OMNI);
   
   usbMIDI.setHandleNoteOn(onNoteOn);
