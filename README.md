@@ -1,6 +1,8 @@
 # SimpleSynth
 SimpleSynth is a Teensy based synth with the main objective to keep it simple.
 
+NOTE: I have stopped maintaining this repo in favor of [Synth](https://github.com/ghostintranslation/synth).
+
 ## Features
 
 * FM, AM and Ring synthesis with 1 carier and 1 modulator
