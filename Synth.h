@@ -3,6 +3,7 @@
 
 #include <Audio.h>
 
+#include "Input.h"
 #include "Voice.h"
 
 
@@ -33,14 +34,15 @@ class Synth{
     unsigned int release;
     int modulatorFrequency;
     float modulatorAmplitude;
-    byte synthPin;
-    byte modePin;
-    byte parameterPin;
-    byte modulatorFrequencyPin;
-    byte modulatorAmplitudePin;
-    byte attackPin;
-    byte decayPin;
-    byte releasePin;
+    
+    Input *synthInput;
+    Input *modeInput;
+    Input *parameterInput;
+    Input *modulatorFrequencyInput;
+    Input *modulatorAmplitudeInput;
+    Input *attackInput;
+    Input *decayInput;
+    Input *releaseInput;
 
     AudioConnection* patchCords[voiceCount/4 + voiceCount]; 
     AudioMixer4 *mixers[voiceCount/2];
@@ -48,7 +50,7 @@ class Synth{
     
   public:
     Synth();
-    Synth(byte synthPin, byte modePin, byte parameterPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin);
+    Synth(Input *synthInput, Input *modeInput, Input *parameterInput, Input *modulatorFrequencyInput, Input *modulatorAmplitudeInput, Input *mixPin, Input *attackInput, Input *decayInput, Input *releaseInput);
 
     void noteOn(byte midiNote);
     void noteOff(byte midiNote);
@@ -94,15 +96,15 @@ inline Synth::Synth(){
 /**
  * Constructor that sets the potentiometer pins
  */
-inline Synth::Synth(byte synthPin, byte modePin, byte parameterPin, byte modulatorFrequencyPin, byte modulatorAmplitudePin, byte mixPin, byte attackPin, byte decayPin, byte releasePin): Synth(){
-  this->synthPin = synthPin;
-  this->modePin = modePin;
-  this->parameterPin = parameterPin;
-  this->modulatorFrequencyPin = modulatorFrequencyPin;
-  this->modulatorAmplitudePin = modulatorAmplitudePin;
-  this->attackPin = attackPin;
-  this->decayPin = decayPin;
-  this->releasePin = releasePin;
+inline Synth::Synth(Input *synthInput, Input *modeInput, Input *parameterInput, Input *modulatorFrequencyInput, Input *modulatorAmplitudeInput, Input *mixPin, Input *attackInput, Input *decayInput, Input *releaseInput): Synth(){
+  this->synthInput = synthInput;
+  this->modeInput = modeInput;
+  this->parameterInput = parameterInput;
+  this->modulatorFrequencyInput = modulatorFrequencyInput;
+  this->modulatorAmplitudeInput = modulatorAmplitudeInput;
+  this->attackInput = attackInput;
+  this->decayInput = decayInput;
+  this->releaseInput = releaseInput;
 }
 
 
@@ -205,7 +207,9 @@ inline AudioMixer4 * Synth::getOutput(){
 inline void Synth::update(){
 
   // Synthesis
-  byte synthesis = (byte)map(analogRead(this->synthPin), 0, 1023, 0, 4);
+  this->synthInput->handleAnalog();
+  
+  byte synthesis = (byte)map(this->synthInput->getValue(), 0, 255, 0, 4);
   if(this->synthesis != synthesis){
     this->synthesis = synthesis;
     for (int i = 0; i < voiceCount ; i++) {
@@ -214,7 +218,9 @@ inline void Synth::update(){
   }
 
   // Mode
-  byte mode = (byte)map(analogRead(this->modePin), 0, 1023, 0, 2);
+  this->modeInput->handleAnalog();
+  
+  byte mode = (byte)map(this->modeInput->getValue(), 0, 255, 0, 2);
   if(this->mode != mode){
     this->mode = mode;
     
@@ -244,7 +250,9 @@ inline void Synth::update(){
   }
 
   // Parameter
-  int parameter = analogRead(this->parameterPin);
+  this->parameterInput->handleAnalog();
+    
+  int parameter = this->parameterInput->getValue();
   if(this->parameter != parameter){
     this->parameter = parameter;
     switch(modes(this->mode)){
@@ -284,8 +292,10 @@ inline void Synth::update(){
     
   
   // Attack
+  this->attackInput->handleAnalog();
+  
   // TODO This should send a standardized value from 0 to 1023
-  int attack = map(analogRead(this->attackPin), 0, 1023, 0, 2000);
+  int attack = map(this->attackInput->getValue(), 0, 255, 0, 2000);
   if(this->attack != attack){
     this->attack = attack;
     for (int i = 0; i < voiceCount ; i++) {
@@ -294,8 +304,10 @@ inline void Synth::update(){
   }
 
   // Decay
+  this->decayInput->handleAnalog();
+  
   // TODO This should send a standardized value from 0 to 1023
-  int decay = map(analogRead(this->decayPin), 0, 1023, 0, 2000);
+  int decay = map(this->decayInput->getValue(), 0, 255, 0, 2000);
   if(this->decay != decay){
     this->decay = decay;
     for (int i = 0; i < voiceCount ; i++) {
@@ -304,8 +316,11 @@ inline void Synth::update(){
   }
 
   // Release
+  this->releaseInput->handleAnalog();
+  
   // TODO This should send a standardized value from 0 to 1023
-  int release = map(analogRead(this->releasePin), 0, 1023, 0, 2000);
+  int release = map(this->releaseInput->getValue(), 0, 255, 0, 2000);
+
   if(this->release != release){
     this->release = release;
     for (int i = 0; i < voiceCount ; i++) {
@@ -314,8 +329,10 @@ inline void Synth::update(){
   }
   
   // Modulator frequency
+  this->modulatorFrequencyInput->handleAnalog();
+  
   // TODO This should send a standardized value from 0 to 1023
-  int modulatorFrequency = map(analogRead(this->modulatorFrequencyPin), 0, 1023, 1, 50);
+  int modulatorFrequency = map(this->modulatorFrequencyInput->getValue(), 0, 255, 1, 50);
   if(this->modulatorFrequency != modulatorFrequency){
     this->modulatorFrequency = modulatorFrequency;
     for (int i = 0; i < voiceCount ; i++) {
@@ -324,8 +341,10 @@ inline void Synth::update(){
   }
   
   // Modulator amplitude
+  this->modulatorAmplitudeInput->handleAnalog();
+  
   // TODO This should send a standardized value from 0 to 1023
-  float modulatorAmplitude = (float)analogRead(this->modulatorAmplitudePin)/(float)4096;
+  float modulatorAmplitude = (float)map((float)this->modulatorAmplitudeInput->getValue(), 0, 255, 0, 1);
   if(this->modulatorAmplitude != modulatorAmplitude){
     this->modulatorAmplitude = modulatorAmplitude;
     for (int i = 0; i < voiceCount ; i++) {
